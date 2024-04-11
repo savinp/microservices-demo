@@ -1,3 +1,4 @@
 This is a text file for explains the setup instructions
 Added the confluence page for this microservice.
 The slowness has been resolved
+The foot font issue has been addressed
