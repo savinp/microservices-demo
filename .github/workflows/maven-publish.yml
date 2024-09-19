@@ -4,6 +4,7 @@
 name: CICD Pipeline- Maven Package 
 
 on:
+  workflow_dispatch:
   release:
     types: [created]
 
