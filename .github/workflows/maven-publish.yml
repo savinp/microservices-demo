@@ -34,7 +34,7 @@ jobs:
       run: mvn -B package --file pom.xml
       
     - name: Assume AWS role using OIDC
-      uses: aws-actions/configure-aws-credentials@v2
+      uses: aws-actions/configure-aws-credentials@v4
       with:
         role-to-assume: arn:aws:iam::692859920006:role/github-actions-to-aws
         aws-region: us-west-2
