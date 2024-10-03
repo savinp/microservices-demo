@@ -55,5 +55,8 @@ jobs:
         docker push 692859920006.dkr.ecr.us-west-2.amazonaws.com/dev/maven-repo:latest
          # Replace placeholders with your actual values 
 
+    - name: Update kubeconfig
+      run: aws eks --region us-west-2 update-kubeconfig --name demo-env-cluster
+
 
 
