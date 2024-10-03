@@ -58,5 +58,10 @@ jobs:
     - name: Update kubeconfig
       run: aws eks --region us-west-2 update-kubeconfig --name demo-env-cluster
 
+    - name: Deploy to EKS
+      run: |
+        kubectl apply -f deployment.yaml
+        kubectl apply -f service.yaml
+
 
 
