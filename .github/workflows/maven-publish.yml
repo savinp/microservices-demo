@@ -1,4 +1,4 @@
-name: Build Microservices
+name: Build and Update Dockerfile
 
 on:
   workflow_dispatch:
@@ -6,7 +6,7 @@ on:
       branch:
         description: 'Branch to build'
         required: true
-        default: 'develop'
+        default: 'main'
         type: string
       serviceType:
         description: 'Select service type (Core or Extension)'
@@ -40,40 +40,17 @@ jobs:
           distribution: 'adopt'
           java-version: '11'
 
-      # Core Microservices
-      - name: Build core microservice 1
-        if: ${{ inputs.serviceType == 'core' && inputs.microservice == 'service1' }}
-        run: |
-          cd core/service1
-          ./mvnw clean install
+      # Set application name based on serviceType and microservice
+      - name: Set Application Name
+        id: set-app-name
+        run: echo "APP_NAME=myapp-${{ inputs.serviceType }}-${{ inputs.microservice }}" >> $GITHUB_ENV
 
-      - name: Build core microservice 2
-        if: ${{ inputs.serviceType == 'core' && inputs.microservice == 'service2' }}
+      # Update Dockerfile with new application name
+      - name: Update Dockerfile with Application Name
         run: |
-          cd core/service2
-          ./mvnw clean install
+          sed -i "s/APP_NAME_PLACEHOLDER/${{ env.APP_NAME }}/g" path/to/Dockerfile
 
-      - name: Build core microservice 3
-        if: ${{ inputs.serviceType == 'core' && inputs.microservice == 'service3' }}
+      # Build Docker image
+      - name: Build Docker Image
         run: |
-          cd core/service3
-          ./mvnw clean install
-
-      # Extension Microservices
-      - name: Build extension microservice 1
-        if: ${{ inputs.serviceType == 'extension' && inputs.microservice == 'service1' }}
-        run: |
-          cd extensions/service1
-          ./mvnw clean install
-
-      - name: Build extension microservice 2
-        if: ${{ inputs.serviceType == 'extension' && inputs.microservice == 'service2' }}
-        run: |
-          cd extensions/service2
-          ./mvnw clean install
-
-      - name: Build extension microservice 3
-        if: ${{ inputs.serviceType == 'extension' && inputs.microservice == 'service3' }}
-        run: |
-          cd extensions/service3
-          ./mvnw clean install
+          docker build -t ${{ env.APP_NAME }} .
