@@ -8,8 +8,15 @@ on:
         required: true
         default: 'develop'
         type: string
+      serviceType:
+        description: 'Select service type (Core or Extension)'
+        required: true
+        type: choice
+        options:
+          - core
+          - extension
       microservice:
-        description: 'Microservice to build'
+        description: 'Select microservice to build'
         required: true
         type: choice
         options:
@@ -20,6 +27,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout the repository
         uses: actions/checkout@v2
@@ -32,20 +40,40 @@ jobs:
           distribution: 'adopt'
           java-version: '11'
 
-      - name: Build microservice 1
-        if: ${{ inputs.microservice == 'service1' }}
+      # Core Microservices
+      - name: Build core microservice 1
+        if: ${{ inputs.serviceType == 'core' && inputs.microservice == 'service1' }}
         run: |
-          cd microservices/service1
+          cd core/service1
           ./mvnw clean install
 
-      - name: Build microservice 2
-        if: ${{ inputs.microservice == 'service2' }}
+      - name: Build core microservice 2
+        if: ${{ inputs.serviceType == 'core' && inputs.microservice == 'service2' }}
         run: |
-          cd microservices/service2
+          cd core/service2
           ./mvnw clean install
 
-      - name: Build microservice 3
-        if: ${{ inputs.microservice == 'service3' }}
+      - name: Build core microservice 3
+        if: ${{ inputs.serviceType == 'core' && inputs.microservice == 'service3' }}
         run: |
-          cd microservices/service3
+          cd core/service3
+          ./mvnw clean install
+
+      # Extension Microservices
+      - name: Build extension microservice 1
+        if: ${{ inputs.serviceType == 'extension' && inputs.microservice == 'service1' }}
+        run: |
+          cd extensions/service1
+          ./mvnw clean install
+
+      - name: Build extension microservice 2
+        if: ${{ inputs.serviceType == 'extension' && inputs.microservice == 'service2' }}
+        run: |
+          cd extensions/service2
+          ./mvnw clean install
+
+      - name: Build extension microservice 3
+        if: ${{ inputs.serviceType == 'extension' && inputs.microservice == 'service3' }}
+        run: |
+          cd extensions/service3
           ./mvnw clean install
