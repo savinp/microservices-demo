@@ -1,71 +1,51 @@
-# This workflow will build a package using Maven and then publish it to GitHub packages when a release is created
-# For more information see: https://github.com/actions/setup-java/blob/main/docs/advanced-usage.md#apache-maven-with-a-settings-path
-
-name: CICD Pipeline- Maven Package 
+name: Build Microservices
 
 on:
   workflow_dispatch:
-  release:
-    types: [created]
-    
+    inputs:
+      branch:
+        description: 'Branch to build'
+        required: true
+        default: 'main'
+        type: string
+      microservice:
+        description: 'Microservice to build'
+        required: true
+        type: choice
+        options:
+          - service1
+          - service2
+          - service3
+
 jobs:
   build:
-
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
-      id-token: write
-
     steps:
-    - uses: actions/checkout@v4
-    - name: Set up JDK 11
-      uses: actions/setup-java@v4
-      with:
-        java-version: '11'
-        distribution: 'temurin'
-        server-id: github # Value of the distributionManagement/repository/id field of the pom.xml
-        settings-path: ${{ github.workspace }} # location for the settings.xml file
+      - name: Checkout the repository
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ inputs.branch }}
 
-    - name: Build with Maven
-      run: mvn -B package --file pom.xml
-      
-    - name: Assume AWS role using OIDC
-      uses: aws-actions/configure-aws-credentials@v4
-      with:
-        role-to-assume: arn:aws:iam::692859920006:role/github-actions-to-aws
-        aws-region: us-west-2
-        role-session-name: github-actions-session
-        
-    - name: Log in to Amazon ECR
-      id: ecr-login
-      uses: aws-actions/amazon-ecr-login@v2
-      
-    - name: Build Docker Image
-      run: |
-        docker build -t springboot-app .  # Replace <YOUR_IMAGE_NAME> with your desired image name
+      - name: Set up JDK 11
+        uses: actions/setup-java@v2
+        with:
+          distribution: 'adopt'
+          java-version: '11'
 
-    - name: Tag Docker Image
-      run: |
-        docker tag springboot-app:latest 692859920006.dkr.ecr.us-west-2.amazonaws.com/dev/maven-repo:latest
-        # Replace placeholders with your actual values
+      - name: Build microservice 1
+        if: ${{ inputs.microservice == 'service1' }}
+        run: |
+          cd microservices/service1
+          ./mvnw clean install
 
-    - name: Push Docker Image to ECR
-      run: |
-        docker push 692859920006.dkr.ecr.us-west-2.amazonaws.com/dev/maven-repo:latest
-         # Replace placeholders with your actual values 
+      - name: Build microservice 2
+        if: ${{ inputs.microservice == 'service2' }}
+        run: |
+          cd microservices/service2
+          ./mvnw clean install
 
-    - name: Update kubeconfig
-      run: aws eks --region us-west-2 update-kubeconfig --name demo-env-cluster
-
-    - name: View kubeconfig
-      run: |
-        cat ~/.kube/config
-
-    - name: Deploy to EKS
-      run: |
-        kubectl apply -f deployment.yaml --validate=false
-        kubectl apply -f service.yaml
-
-
-
+      - name: Build microservice 3
+        if: ${{ inputs.microservice == 'service3' }}
+        run: |
+          cd microservices/service3
+          ./mvnw clean install
