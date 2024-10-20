@@ -39,6 +39,11 @@ jobs:
           SHORT_SHA=$(echo "${{ github.sha }}" | cut -c1-7)
           echo "Short Commit ID: $SHORT_SHA"
 
+      - name: Add version to workflow summary
+        run: |
+          VERSION=$(cat version.txt)
+          echo "## Version: $VERSION" >> $GITHUB_STEP_SUMMARY
+
       - name: Set up JDK 11
         uses: actions/setup-java@v2
         with:
