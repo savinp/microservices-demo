@@ -41,7 +41,7 @@ jobs:
 
       - name: Add version to workflow summary
         run: |
-          VERSION=$(cat version.txt)
+          VERSION="hello"
           echo "## Version: $VERSION" >> $GITHUB_STEP_SUMMARY
 
       - name: Set up JDK 11
