@@ -50,40 +50,4 @@ jobs:
           distribution: 'adopt'
           java-version: '11'
 
-      # Core Microservices
-      - name: Build core microservice 1
-        if: ${{ inputs.serviceType == 'core' && inputs.microservice == 'service1' }}
-        run: |
-          cd core/service1
-          ./mvnw clean install
-
-      - name: Build core microservice 2
-        if: ${{ inputs.serviceType == 'core' && inputs.microservice == 'service2' }}
-        run: |
-          cd core/service2
-          ./mvnw clean install
-
-      - name: Build core microservice 3
-        if: ${{ inputs.serviceType == 'core' && inputs.microservice == 'service3' }}
-        run: |
-          cd core/service3
-          ./mvnw clean install
-
-      # Extension Microservices
-      - name: Build extension microservice 1
-        if: ${{ inputs.serviceType == 'extension' && inputs.microservice == 'service1' }}
-        run: |
-          cd extensions/service1
-          ./mvnw clean install
-
-      - name: Build extension microservice 2
-        if: ${{ inputs.serviceType == 'extension' && inputs.microservice == 'service2' }}
-        run: |
-          cd extensions/service2
-          ./mvnw clean install
-
-      - name: Build extension microservice 3
-        if: ${{ inputs.serviceType == 'extension' && inputs.microservice == 'service3' }}
-        run: |
-          cd extensions/service3
-          ./mvnw clean install
+ 
