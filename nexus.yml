@@ -1,0 +1,95 @@
+1. pom.xml
+
+<distributionManagement>
+  <repository>
+    <id>nexus-releases</id>
+    <url>https://nexus.company.com/repository/maven-releases/</url>
+  </repository>
+  <snapshotRepository>
+    <id>nexus-snapshots</id>
+    <url>https://nexus.company.com/repository/maven-snapshots/</url>
+  </snapshotRepository>
+</distributionManagement>
+
+2. 
+
+name: Java Library CI - Nexus
+
+on:
+  workflow_call:
+    inputs:
+      java-version:
+        description: "Java version"
+        type: string
+        default: "17"
+      release-branch:
+        description: "Release branch"
+        type: string
+        default: "main"
+      snapshot-branch:
+        description: "Snapshot branch"
+        type: string
+        default: "develop"
+    secrets:
+      NEXUS_USERNAME:
+        required: true
+      NEXUS_PASSWORD:
+        required: true
+
+jobs:
+  build-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: ${{ inputs.java-version }}
+          cache: maven
+
+      - name: Configure Maven settings.xml
+        run: |
+          mkdir -p ~/.m2
+          cat > ~/.m2/settings.xml <<EOF
+          <settings>
+            <servers>
+              <server>
+                <id>nexus-releases</id>
+                <username>${NEXUS_USERNAME}</username>
+                <password>${NEXUS_PASSWORD}</password>
+              </server>
+              <server>
+                <id>nexus-snapshots</id>
+                <username>${NEXUS_USERNAME}</username>
+                <password>${NEXUS_PASSWORD}</password>
+              </server>
+            </servers>
+          </settings>
+          EOF
+        env:
+          NEXUS_USERNAME: ${{ secrets.NEXUS_USERNAME }}
+          NEXUS_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
+
+      - name: Build & Test
+        run: mvn clean verify
+
+      # Safety guard: no SNAPSHOT allowed on release branch
+      - name: Block SNAPSHOT on release branch
+        if: github.ref_name == inputs.release-branch
+        run: |
+          VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
+          echo "Version: $VERSION"
+          if [[ "$VERSION" == *SNAPSHOT ]]; then
+            echo "❌ SNAPSHOT version not allowed on release branch"
+            exit 1
+          fi
+
+      - name: Deploy to Nexus
+        if: |
+          github.ref_name == inputs.release-branch ||
+          github.ref_name == inputs.snapshot-branch
+        run: mvn deploy -DskipTests
