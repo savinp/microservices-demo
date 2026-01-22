@@ -113,3 +113,37 @@ jobs:
       echo "Artifact successfully published to Nexus."
     } >> "$GITHUB_STEP_SUMMARY"
 
+
+- name: Enforce branch–version policy
+  shell: bash
+  run: |
+    VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
+    BRANCH="${{ github.ref_name }}"
+    RELEASE_BRANCH="${{ inputs.release-branch }}"
+    SNAPSHOT_BRANCH="${{ inputs.snapshot-branch }}"
+
+    echo "Branch          : $BRANCH"
+    echo "Release branch  : $RELEASE_BRANCH"
+    echo "Snapshot branch : $SNAPSHOT_BRANCH"
+    echo "Version         : $VERSION"
+
+    # Release branch → release versions only
+    if [[ "$BRANCH" == "$RELEASE_BRANCH" && "$VERSION" == *SNAPSHOT ]]; then
+      echo "❌ SNAPSHOT versions are not allowed on release branch ($RELEASE_BRANCH)"
+      exit 1
+    fi
+
+    # Snapshot branch → SNAPSHOT versions only
+    if [[ "$BRANCH" == "$SNAPSHOT_BRANCH" && "$VERSION" != *SNAPSHOT ]]; then
+      echo "❌ Release versions are not allowed on snapshot branch ($SNAPSHOT_BRANCH)"
+      exit 1
+    fi
+
+    # Other branches → no deploy
+    if [[ "$BRANCH" != "$RELEASE_BRANCH" && "$BRANCH" != "$SNAPSHOT_BRANCH" ]]; then
+      echo "❌ Deployment is allowed only from '$RELEASE_BRANCH' or '$SNAPSHOT_BRANCH'"
+      exit 1
+    fi
+
+    
+
