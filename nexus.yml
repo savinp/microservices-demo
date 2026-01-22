@@ -93,3 +93,23 @@ jobs:
           github.ref_name == inputs.release-branch ||
           github.ref_name == inputs.snapshot-branch
         run: mvn deploy -DskipTests
+
+
+- name: Publish summary
+  if: |
+    github.ref_name == inputs.release-branch ||
+    github.ref_name == inputs.snapshot-branch
+  run: |
+    NAME=$(mvn help:evaluate -Dexpression=project.artifactId -q -DforceStdout)
+    VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
+
+    {
+      echo "## 🚀 Nexus Publish Summary"
+      echo ""
+      echo "**Library** : \`$NAME\`"
+      echo "**Version** : \`$VERSION\`"
+      echo "**Branch**  : \`${{ github.ref_name }}\`"
+      echo ""
+      echo "Artifact successfully published to Nexus."
+    } >> "$GITHUB_STEP_SUMMARY"
+
