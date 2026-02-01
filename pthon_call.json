@@ -1,0 +1,8 @@
+curl -X POST http://localhost:8080/compress \
+  -H "Content-Type: application/json" \
+  -d '{
+        "job_name": "LOCAL_TEST",
+        "source_dir": "/data/incoming",
+        "target_dir": "/data/archive",
+        "file_pattern": "*.txt"
+      }'
