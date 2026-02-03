@@ -6,3 +6,7 @@ curl -X POST http://localhost:8080/compress \
         "target_dir": "/data/archive",
         "file_pattern": "*.txt"
       }'
+
+ts = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+zip_file = f"{tgt}/{name}_{ts}.zip"
+
