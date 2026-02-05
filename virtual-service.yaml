@@ -1,0 +1,38 @@
+{{- define "shared-helm-templates.istio-virtualservice" -}}
+{{- if .Values.istio.enabled }}
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: {{ .Values.name }}-vs
+spec:
+  gateways:
+    - {{ .Values.istio.gateway }}
+
+  hosts:
+    {{- range .Values.istio.hosts }}
+    - {{ . }}
+    {{- end }}
+
+  http:
+    - match:
+        - uri:
+            prefix: {{ .Values.istio.uriPrefix }}
+      headers:
+        request:
+          set:
+            X-username: "anonymous"
+            X-Forwarded-Proto: https
+            X-Forwarded-Host: {{ index .Values.istio.hosts 0 }}
+
+      route:
+        - destination:
+            host: {{ .Values.istio.upstreamHost }}
+            port:
+              number: {{ .Values.service.port }}
+
+      {{- if and .Values.istio.timeout (ne .Values.istio.timeout "") }}
+      timeout: {{ .Values.istio.timeout }}
+      {{- end }}
+
+{{- end }}
+{{- end }}
